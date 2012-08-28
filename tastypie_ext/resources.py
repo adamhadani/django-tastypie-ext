@@ -14,6 +14,7 @@ from tastypie.models import ApiToken
 from tastypie.authentication import ApiTokenAuthentication
 
 import tastypie_ext.settings as settings 
+from tastypie_ext.authentication import *
 
 class UserResource(ModelResource):
     """
@@ -141,3 +142,35 @@ class GETAPITokenAuthenticationResource(ModelResource):
         raise ImmediateHttpResponse(response=http.HttpUnauthorized())
 
         
+class GETAPIFacebookTokenAuthenticationResource(GETAPITokenAuthenticationResource):
+    """
+    Uses Django-facebook to perform OAuth 2.0 authentication with facebook,
+    and, if successful, issue own api session token.
+    
+    Typical use case is with a mobile client e.g:
+    1. Mobile client app performs facebook authentication, gets token from fb
+    2. Mobile client app hits this authentication url with the fb token
+    3. API backend (this resource) validates the facebook token server-side
+    4. if successful, API backend (this resource) authenticates user and
+       returns own token for use in rest of session, as well storing
+       the fb token as needed for further actions
+      
+       
+    * It is required that the user's email be available, e.g the access token
+      that is generated should have the 'email' access permission. See Facebook's
+      Graph API documentation for more information.
+       
+    References:
+    [1] http://stackoverflow.com/questions/4623974/
+    [2] https://developers.facebook.com/docs/authentication/client-side/
+
+    """
+
+    class Meta(object):
+        queryset = ApiToken.objects.all()
+        resource_name = 'fb_authenticate'
+        fields = ['user', 'token']
+        allowed_methods = ['get']
+        authorization = Authorization()
+        authentication = FacebookOAUTH2Authentication()
+         

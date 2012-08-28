@@ -1,5 +1,9 @@
 *.py[cod]
 
+# Project metafiles
+.project
+.pydevproject
+
 # Packages
 *.egg
 *.egg-info

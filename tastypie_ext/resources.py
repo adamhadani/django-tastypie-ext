@@ -13,14 +13,87 @@ from tastypie.authorization import Authorization, DjangoAuthorization
 from tastypie.models import ApiToken
 from tastypie.authentication import ApiTokenAuthentication
 
-class GETAPITokenAuthenticationResource(ModelResource):
-    """HTTP GET-based authentication end point
-    for use with the ApiTokenAuthentication
-    flow. This allows to use this with cross-domain
-    AJAX (e.g JSONP)"""
+import tastypie_ext.settings as settings 
+
+class UserResource(ModelResource):
+    """
+    Resource to represent an API User.
+    Used e.g for authentication. This implementation
+    relies on django's inbuilt User model from the `contrib.auth` package.
+    
+    """
+    
+    class Meta:
+        queryset = User.objects.all()
+        resource_name = 'user'
+        
+        fields = settings.TASTYPIE_EXT_USERRESOURCE_FIELDS
+        
+        authentication = ApiTokenAuthentication()
+        authorization = Authorization()
+        
+        
+class SessionResource(ModelResource):
+    """Represent a (active) session.
+    Can be used to fetch current user associated
+    with session, as well as destroy session (e.g invalidate session token)
+    using an HTTP DELETE on the resource URI.
+    
+    """
+    user = fields.ToOneField(
+        'tastypie_ext.resources.UserResource', 'user', full=True)
+
+    class Meta(object):
+        queryset = ApiToken.objects.all()
+        resource_name = 'sessions'
+        fields = ['user', 'token']
+        allowed_methods = ['get', 'delete']
+        authorization = Authorization()
+        authentication = ApiTokenAuthentication()
+        always_return_data = True
+        
+        
+class POSTAPITokenAuthenticationResource(ModelResource):
+    """
+    HTTP POST-based authentication end point
+    for use with the ApiTokenAuthentication 
+    flow.
+    
+    """
     
     user = fields.ToOneField(
-        'api.resources.UserResource', 'user', full=True)
+        'tastypie_ext.resources.UserResource', 'user', full=True)
+
+    class Meta(object):
+        queryset = ApiToken.objects.all()
+        resource_name = 'authenticate'
+        fields = ['user', 'token']
+        allowed_methods = ['post']
+        authorization = Authorization()
+        authentication = BasicAuthentication()
+        always_return_data = True
+
+    def obj_create(self, bundle, request=None, **kwargs):
+        " Create a new token for the session."
+        bundle.obj = ApiToken.objects.create(user=request.user)
+        return bundle
+
+    def dehydrate_resource_uri(self, bundle):
+        return SessionResource().get_resource_uri(bundle.obj)
+
+
+
+class GETAPITokenAuthenticationResource(ModelResource):
+    """
+    HTTP GET-based authentication end point
+    for use with the ApiTokenAuthentication
+    flow. This allows to use this with cross-domain
+    AJAX (e.g JSONP).
+    
+    """
+    
+    user = fields.ToOneField(
+        'tastypie_ext.resources.UserResource', 'user', full=True)
     
     class Meta(object):
         queryset = ApiToken.objects.all()
@@ -43,7 +116,7 @@ class GETAPITokenAuthenticationResource(ModelResource):
     def _create_token(self, request, **kwargs):
         """Validate using BasicAuthentication, and create Api Token
         if authenticated"""
-        print "asdf"
+        print request
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         self.throttle_check(request)

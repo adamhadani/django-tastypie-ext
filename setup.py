@@ -20,5 +20,6 @@ if __name__ == '__main__':
         install_requires = (
             'Django>=1.4',
             'django-tastypie>=0.9.11',
+            'Django-facebook'
         ),
     )

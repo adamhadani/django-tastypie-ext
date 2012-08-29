@@ -22,7 +22,7 @@ class FacebookOAUTH2Authentication(Authentication):
 
         # Make sure user supplied access token in request
         try:
-            fb_access_token = request.GET['fb_access_token']
+            access_token = request.GET['faccess_token']
         except KeyError:
             return self._unauthorized()
 
@@ -30,7 +30,7 @@ class FacebookOAUTH2Authentication(Authentication):
         from open_facebook import OpenFacebook
         from django_facebook.connect import connect_user
 
-        facebook = OpenFacebook(fb_access_token)
+        facebook = OpenFacebook(access_token)
 
         try:
             if not facebook or \
@@ -43,12 +43,9 @@ class FacebookOAUTH2Authentication(Authentication):
         # Facebook authenticated, now associate
         # with own internal user, Creating a new user if 
         # necessary.
-        action, user = connect_user(request, fb_access_token, facebook)
-
+        action, user = connect_user(request, access_token, facebook)
         request.user = user
-        
-        print "action, user: ", action, user
-        
+  
         return True
     
 

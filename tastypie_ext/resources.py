@@ -7,7 +7,7 @@ from tastypie.utils import trailing_slash
 from tastypie.resources import ModelResource, Resource
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.authentication import BasicAuthentication
-from tastypie.authorization import Authorization, DjangoAuthorization
+from tastypie.authorization import Authorization, ReadOnlyAuthorization, DjangoAuthorization
 
 # These are based on the tastypie fork
 from tastypie.models import ApiToken
@@ -29,9 +29,10 @@ class UserResource(ModelResource):
         resource_name = 'user'
         
         fields = settings.TASTYPIE_EXT_USERRESOURCE_FIELDS
+        allowed_methods = ['get']
         
         authentication = ApiTokenAuthentication()
-        authorization = Authorization()
+        authorization = ReadOnlyAuthorization()
         
         
 class SessionResource(ModelResource):

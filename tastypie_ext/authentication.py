@@ -22,7 +22,7 @@ class FacebookOAUTH2Authentication(Authentication):
 
         # Make sure user supplied access token in request
         try:
-            access_token = request.GET['faccess_token']
+            access_token = request.GET['access_token']
         except KeyError:
             return self._unauthorized()
 

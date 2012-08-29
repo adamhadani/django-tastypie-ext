@@ -1,8 +1,8 @@
-# django-tastypie-ext
+###################
+django-tastypie-ext
+###################
 
-#### A collection of lightweight, reusable extensions (models, resources and backends) for use with [django-tastypie](http://www.github.com/toastdriven/django-tastypie).
-
-****************
+A collection of lightweight, reusable extensions (models, resources and backends) for use with [django-tastypie](http://www.github.com/toastdriven/django-tastypie).
 
 Overview
 ========
